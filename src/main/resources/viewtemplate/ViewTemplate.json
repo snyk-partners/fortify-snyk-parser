@@ -1,0 +1,157 @@
+[
+  [
+    {
+      "type": "template",
+      "title": "Snyk Analysis",
+      "templateId": "TITLEBOX",
+      "dataType": "string",
+      "items": [
+        {
+          "type": "template",
+          "key": "customAttributes.title",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "title": "Criticality",
+          "key": "friority",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.name",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.version",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.from",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.isUpgradable",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.isPatchable",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.filename",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.packageManager",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.language",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "type": "fieldset",
+      "htmlClass": "container-spacer-bottom",
+      "items": [
+        {
+          "type": "template",
+          "title": "Issue scan status",
+          "key": "scanStatus",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "title": "Issue status",
+          "key": "issueStatus",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "title": "Issue state",
+          "key": "issueState",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "title": "Confidence",
+          "key": "confidence",
+          "templateId": "SIMPLE",
+          "dataType": "float"
+        },
+        {
+          "type": "template",
+          "title": "Impact",
+          "key": "impact",
+          "templateId": "SIMPLE",
+          "dataType": "float"
+        },
+        {
+          "type": "template",
+          "title": "Audited",
+          "key": "audited",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "type": "template",
+      "title": "Issue Information",
+      "templateId": "TITLEBOX",
+      "dataType": "string",
+      "items": [
+        { 
+          "type": "template",
+          "key": "customAttributes.snykId",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.description",
+          "templateId": "COLLAPSE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.publicationTime",
+          "templateId": "SIMPLE",
+          "dataType": "date"
+        },
+        {
+          "type": "template",
+          "key": "customAttributes.issueUrl",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        }
+      ]
+    }
+  ]
+]

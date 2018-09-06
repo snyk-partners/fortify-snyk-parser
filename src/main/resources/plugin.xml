@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<plugin xmlns="xmlns://www.fortify.com/schema/pluginmanifest-1.0.xsd"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="PluginDescriptor"
+        id="io.snyk.integrations.fortify.parser" api-version="1.0">
+    <plugin-info>
+        <name>Snyk Parser Plugin</name>
+        <version><!--VERSION-->0.0.1<!--/VERSION--></version>
+        <data-version>1</data-version>
+        <vendor name="Snyk" url="https://snyk.io"/>
+        <description>Snyk automates finding and fixing known vulnerabilities in your open source dependencies. This plugin parses "snyk test" results and uploads them to Fortify Software Security Center.
+        For more information see https://snyk.io.
+        </description>
+        <resources>
+            <localization>
+                <language id="default" location="/resources/en.properties"/>
+                <language id="en" location="/resources/en.properties"/>
+            </localization>
+            <images>
+                <image imageType="icon" location="/images/snyk-icon.png"/>
+                <image imageType="logo" location="/images/snyk-logo.png"/>
+            </images>
+        </resources>
+    </plugin-info>
+    <issue-parser xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <engine-type>SNYK</engine-type>
+        <supported-engine-versions>[1.86.0]</supported-engine-versions>
+        <view-template location="/viewtemplate/ViewTemplate.json">
+            <description>Default issue view template.</description>
+        </view-template>
+    </issue-parser>
+</plugin>
+
