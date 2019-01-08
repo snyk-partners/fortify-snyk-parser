@@ -25,18 +25,31 @@ Then grab the file produced at:
 1. Once uploaded, click on "Snyk Parser Plugin" line, then click `ENABLE` and acknowledge
 1. Plugin should be installed now
 ## Usage
-To use the Snyk Parser Plugin, cli scan results in `.json` format should be uploaded, in a special SSC `zip` file format.
-1. Generate `scan.zip` scan results files. Inside any project execute:
+To use the Snyk Parser Plugin, cli scan results in `.json` format should be generated.
 ```
 snyk test --json > scan.json
+```
+and an app version should be declared (in: `http://127.0.0.1:8180/ssc/html/ssc/version`).
+If you don't have any, just create one (click `NEW APPLICATION` and then fill out info).
+### Using the web UI
+1. Generate `scan.zip` scan results files. Alongside `scan.json` execute:
+```
 echo "engineType=SNYK" > scan.info
 zip -v scan.zip scan.json scan.info
 ```
-1. Go to: `http://127.0.0.1:8180/ssc/html/ssc/version`
+2. Go to `http://127.0.0.1:8180/ssc/html/ssc/version` and select the version to bind the report to.
 and click on the application you want to bind the scan results to.
-If you don't have any, just create one (click `NEW APPLICATION` and then fill out info)
-1. Click `ARTIFACTS` tab and there click `ARTIFACT`.
-2. Click `ADD FILES` and select the `scan.zip` you just made. Then click `START UPLOAD`. `CLOSE` to close the window.
-3. Once results were successfully processed, you should see status `Processing Complete` for the uploaded `scan.zip`.
-4. Click on `AUDIT` tab at the top and you should see all issues reported by Snyk in the table.
-5. Click on any row to reveal detailed information on issue.
+3. Click `ARTIFACTS` tab and there click `ARTIFACT`.
+4. Click `ADD FILES` and select the `scan.zip` you just made. Then click `START UPLOAD`. `CLOSE` to close the window.
+5. Once results were successfully processed, you should see status `Processing Complete` for the uploaded `scan.zip`.
+### Using the REST API
+Alongside the `scan.json`:
+```
+curl --noproxy localhost -X POST -H "Content-Type: application/json" -u admin:<PASSWORD> -d '{"fileTokenType": "UPLOAD"}' http://localhost:8180/ssc/api/v1/fileTokens
+curl --noproxy localhost -X POST --form files=@"scan.json" "http://localhost:8180/ssc/upload/resultFileUpload.html?mat=<TOKEN>&entityId=<APP_ID>&engineType=SNYK" 
+```
+`APP_ID` is the id number of the app version, in the url when going to an app dashboard `http://localhost:8180/ssc/html/ssc/version/<APP_ID>/`
+### Viewing results
+1. In the app version dashboard (`http://localhost:8180/ssc/html/ssc/version/<APP_ID>/`).
+2. Click on `AUDIT` tab at the top and you should see all issues reported by Snyk in the table.
+3. Click on any row to reveal detailed information on issue.
