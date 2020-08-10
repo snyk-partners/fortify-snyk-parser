@@ -4,7 +4,7 @@
         id="io.snyk.integrations.fortify.parser" api-version="1.0">
     <plugin-info>
         <name>Snyk Parser Plugin</name>
-        <version><!--VERSION-->0.0.1<!--/VERSION--></version>
+        <version><!--VERSION-->0.0.2<!--/VERSION--></version>
         <data-version>1</data-version>
         <vendor name="Snyk" url="https://snyk.io"/>
         <description>Snyk automates finding and fixing known vulnerabilities in your open source dependencies. This plugin parses "snyk test" results and uploads them to Fortify Software Security Center.
@@ -29,4 +29,3 @@
         </view-template>
     </issue-parser>
 </plugin>
-

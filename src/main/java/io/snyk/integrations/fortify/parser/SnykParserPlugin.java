@@ -12,6 +12,8 @@ import java.security.NoSuchAlgorithmException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +26,7 @@ import com.fortify.plugin.spi.ParserPlugin;
 
 public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
     private static final Logger LOG = LoggerFactory.getLogger(SnykParserPlugin.class);
-    private static final Gson gson = new GsonBuilder().setDateFormat(DateFormat.FULL, DateFormat.FULL).create();;
+    private static final Gson gson = new GsonBuilder().setDateFormat(DateFormat.FULL, DateFormat.FULL).create();
 
     @Override
     public void start() throws Exception {
@@ -42,11 +44,12 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
     }
 
     @Override
-    public void parseScan(final ScanData scanData, final ScanBuilder scanBuilder) throws ScanParsingException, IOException {
+    public void parseScan(final ScanData scanData, final ScanBuilder scanBuilder)
+            throws ScanParsingException, IOException {
         try {
-            Scan scan = parseJson(scanData);
-            
-            buildScanObject(scanBuilder, scan);
+            Scan[] scans = parseJson(scanData);
+
+            buildScanObject(scanBuilder, scans);
 
         } catch (NullPointerException e) {
             throw new ScanParsingException("Parsing error: requried field not found", e);
@@ -55,30 +58,34 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         }
     }
 
-    private void buildScanObject(final ScanBuilder scanBuilder, final Scan scan) {
-        String uniqueId = hashJsonObject(scan);
+    private void buildScanObject(final ScanBuilder scanBuilder, final Scan[] scans) {
+        String uniqueId = hashJsonObject(scans);
 
         scanBuilder.setGuid(uniqueId);
-        scanBuilder.setScanDate(scan.scanDate != null ? scan.scanDate : new Date());
+        scanBuilder.setScanDate(scans.length > 0 && scans[0].scanDate != null ? scans[0].scanDate : new Date());
     }
 
     @Override
-    public void parseVulnerabilities(final ScanData scanData, final VulnerabilityHandler vulnerabilityHandler) throws ScanParsingException, IOException {
+    public void parseVulnerabilities(final ScanData scanData, final VulnerabilityHandler vulnerabilityHandler)
+            throws ScanParsingException, IOException {
         try {
-            Scan scan = parseJson(scanData);
+            Scan[] scans = parseJson(scanData);
 
-            for (Scan.Issue issue : scan.vulnerabilities) {
-                try {
-                    String uniqueId = hashJsonObject(issue);
-                    StaticVulnerabilityBuilder vulnerabilityBuilder = vulnerabilityHandler.startStaticVulnerability(uniqueId);
-                    
-                    buildVulnerability(vulnerabilityBuilder, issue);
-                    
-                    vulnerabilityBuilder.completeVulnerability();
-                } catch (NullPointerException e) {
-                    LOG.error("Error when processing vuln (missing field?). Continuing to next one");
+            for (Scan scan : scans) {
+                for (Scan.Issue issue : scan.vulnerabilities) {
+                    try {
+                        String uniqueId = hashJsonObject(issue);
+                        StaticVulnerabilityBuilder vulnerabilityBuilder = vulnerabilityHandler
+                                .startStaticVulnerability(uniqueId);
+
+                        buildVulnerability(vulnerabilityBuilder, issue);
+
+                        vulnerabilityBuilder.completeVulnerability();
+                    } catch (NullPointerException e) {
+                        LOG.error("Error when processing vuln (missing field?). Continuing to next one");
+                    }
                 }
-            } 
+            }
         } catch (NullPointerException e) {
             throw new ScanParsingException("Parsing error: requried field not found", e);
         }
@@ -90,7 +97,7 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         vulnerabilityBuilder.setAnalyzer("snyk");
         vulnerabilityBuilder.setEngineType("SNYK_ENGINE");
         vulnerabilityBuilder.setConfidence(5f);
-        
+
         switch (issue.severity) {
             case "high":
                 vulnerabilityBuilder.setPriority(StaticVulnerabilityBuilder.Priority.High);
@@ -109,7 +116,7 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         vulnerabilityBuilder.setImpact(5f);
         vulnerabilityBuilder.setProbability(5f);
         vulnerabilityBuilder.setCategory(issue.title);
-        
+
         // optional
         // vulnerabilityBuilder.setVulnerabilityAbstract(issue.description);
         // vulnerabilityBuilder.setVulnerabilityRecommendation("fixed on snyk.io");
@@ -128,15 +135,28 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.PACKAGE_MANAGER, issue.packageManager);
         vulnerabilityBuilder.setDateCustomAttributeValue(CustomAttribute.PUBLICATION_DATE, issue.publicationTime);
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.FROM, String.join(" > ", issue.from));
-        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.IS_UPGRADABLE, (issue.isUpgradable ? "Yes" : "No"));
-        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.IS_PATCHABLE, (issue.isPatchable ? "Yes" : "No"));
+        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.IS_UPGRADABLE,
+                (issue.isUpgradable ? "Yes" : "No"));
+        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.IS_PATCHABLE,
+                (issue.isPatchable ? "Yes" : "No"));
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.FILENAME, issue.__filename);
-        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.ISSUE_URL, "https://snyk.io/vuln/" + issue.id);
+        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.ISSUE_URL,
+                "https://snyk.io/vuln/" + issue.id);
     }
 
-    private Scan parseJson(final ScanData scanData) throws IOException {
+    private Scan[] parseJson(final ScanData scanData) throws IOException {
         try (final InputStream is = scanData.getInputStream(x -> x.endsWith(".json"))) {
-            return gson.fromJson(new JsonReader(new InputStreamReader(is)), Scan.class);
+            final JsonReader json = new JsonReader(new InputStreamReader(is));
+            /*
+             * snyk test --all-sub-projects (that starts with [ and not {) [ {
+             * "vulnerabilities": [], "ok": true, "dependencyCount": 0, ....
+             */
+            if (json.peek() == JsonToken.BEGIN_ARRAY) {
+                return gson.fromJson(json, Scan[].class);
+            } else {
+                Scan ret[] = { gson.fromJson(json, Scan.class) };
+                return ret;
+            }
         }
     }
 
@@ -146,7 +166,7 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(jsonStringBytes);
             return UUID.nameUUIDFromBytes(digest).toString();
         } catch (NoSuchAlgorithmException e) {
-            return "";          // should never reach here
+            return ""; // should never reach here
         }
     }
 }
