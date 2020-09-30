@@ -51,7 +51,7 @@
         },
         {
           "type": "template",
-          "key": "customAttributes.filename",
+          "key": "customAttributes.targetFile",
           "templateId": "SIMPLE",
           "dataType": "string"
         },

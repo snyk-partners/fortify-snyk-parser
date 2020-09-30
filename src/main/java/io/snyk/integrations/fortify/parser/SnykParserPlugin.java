@@ -74,11 +74,11 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
             for (Scan scan : scans) {
                 for (Scan.Issue issue : scan.vulnerabilities) {
                     try {
-                        String uniqueId = hashJsonObject(issue);
+                        String uniqueId = scan.displayTargetFile + ":" + hashJsonObject(issue);
                         StaticVulnerabilityBuilder vulnerabilityBuilder = vulnerabilityHandler
                                 .startStaticVulnerability(uniqueId);
 
-                        buildVulnerability(vulnerabilityBuilder, issue);
+                        buildVulnerability(vulnerabilityBuilder, issue, scan.displayTargetFile);
 
                         vulnerabilityBuilder.completeVulnerability();
                     } catch (NullPointerException e) {
@@ -91,7 +91,7 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         }
     }
 
-    private void buildVulnerability(final StaticVulnerabilityBuilder vulnerabilityBuilder, final Scan.Issue issue) {
+    private void buildVulnerability(final StaticVulnerabilityBuilder vulnerabilityBuilder, final Scan.Issue issue, final String targetFile) {
         // mandatory by SSC
         vulnerabilityBuilder.setAccuracy(5f);
         vulnerabilityBuilder.setAnalyzer("snyk");
@@ -117,11 +117,6 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         vulnerabilityBuilder.setProbability(5f);
         vulnerabilityBuilder.setCategory(issue.title);
 
-        // optional
-        // vulnerabilityBuilder.setVulnerabilityAbstract(issue.description);
-        // vulnerabilityBuilder.setVulnerabilityRecommendation("fixed on snyk.io");
-        // vulnerabilityBuilder.setPackageName(issue.name);
-        // vulnerabilityBuilder.setFileName(issue.__filename);
         vulnerabilityBuilder.setFileName(issue.from[issue.from.length - 1]);
 
         // custom
@@ -139,7 +134,7 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
                 (issue.isUpgradable ? "Yes" : "No"));
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.IS_PATCHABLE,
                 (issue.isPatchable ? "Yes" : "No"));
-        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.FILENAME, issue.__filename);
+        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.TARGET_FILE, targetFile);
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.ISSUE_URL,
                 "https://snyk.io/vuln/" + issue.id);
     }
