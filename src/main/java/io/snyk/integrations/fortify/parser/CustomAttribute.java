@@ -14,7 +14,7 @@ public enum CustomAttribute implements com.fortify.plugin.spi.VulnerabilityAttri
     FROM("from", AttrType.STRING),
     IS_UPGRADABLE("isUpgradable", AttrType.STRING),
     IS_PATCHABLE("isPatchable", AttrType.STRING),
-    FILENAME("filename", AttrType.STRING),
+    TARGET_FILE("targetFile", AttrType.STRING),
     ISSUE_URL("issueUrl", AttrType.STRING);
     ;
 
