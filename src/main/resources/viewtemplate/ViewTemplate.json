@@ -57,6 +57,12 @@
         },
         {
           "type": "template",
+          "key": "customAttributes.projectName",
+          "templateId": "SIMPLE",
+          "dataType": "string"
+        },
+        {
+          "type": "template",
           "key": "customAttributes.packageManager",
           "templateId": "SIMPLE",
           "dataType": "string"

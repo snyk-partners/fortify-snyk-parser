@@ -74,11 +74,12 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
             for (Scan scan : scans) {
                 for (Scan.Issue issue : scan.vulnerabilities) {
                     try {
-                        String uniqueId = scan.displayTargetFile + ":" + hashJsonObject(issue);
+                        String targetFile = scan.targetFile != null ? scan.targetFile : scan.displayTargetFile;
+                        String uniqueId = hashStringObject(targetFile) + ":" + hashJsonObject(issue);
                         StaticVulnerabilityBuilder vulnerabilityBuilder = vulnerabilityHandler
                                 .startStaticVulnerability(uniqueId);
 
-                        buildVulnerability(vulnerabilityBuilder, issue, scan.displayTargetFile);
+                        buildVulnerability(vulnerabilityBuilder, issue, targetFile, scan.projectName);
 
                         vulnerabilityBuilder.completeVulnerability();
                     } catch (NullPointerException e) {
@@ -91,7 +92,7 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         }
     }
 
-    private void buildVulnerability(final StaticVulnerabilityBuilder vulnerabilityBuilder, final Scan.Issue issue, final String targetFile) {
+    private void buildVulnerability(final StaticVulnerabilityBuilder vulnerabilityBuilder, final Scan.Issue issue, final String targetFile, final String projectName) {
         // mandatory by SSC
         vulnerabilityBuilder.setAccuracy(5f);
         vulnerabilityBuilder.setAnalyzer("snyk");
@@ -135,6 +136,7 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.IS_PATCHABLE,
                 (issue.isPatchable ? "Yes" : "No"));
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.TARGET_FILE, targetFile);
+        vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.PROJECT_NAME, projectName);
         vulnerabilityBuilder.setStringCustomAttributeValue(CustomAttribute.ISSUE_URL,
                 "https://snyk.io/vuln/" + issue.id);
     }
@@ -159,6 +161,16 @@ public class SnykParserPlugin implements ParserPlugin<CustomAttribute> {
         try {
             byte[] jsonStringBytes = gson.toJson(obj).getBytes();
             byte[] digest = MessageDigest.getInstance("SHA-256").digest(jsonStringBytes);
+            return UUID.nameUUIDFromBytes(digest).toString();
+        } catch (NoSuchAlgorithmException e) {
+            return ""; // should never reach here
+        }
+    }
+
+    private String hashStringObject(final String obj) {
+        try {
+            byte[] stringBytes = obj.getBytes();
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(stringBytes);
             return UUID.nameUUIDFromBytes(digest).toString();
         } catch (NoSuchAlgorithmException e) {
             return ""; // should never reach here
