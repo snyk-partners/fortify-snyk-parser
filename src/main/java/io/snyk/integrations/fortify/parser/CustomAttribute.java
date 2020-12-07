@@ -15,6 +15,8 @@ public enum CustomAttribute implements com.fortify.plugin.spi.VulnerabilityAttri
     IS_UPGRADABLE("isUpgradable", AttrType.STRING),
     IS_PATCHABLE("isPatchable", AttrType.STRING),
     TARGET_FILE("targetFile", AttrType.STRING),
+
+    PROJECT_NAME("projectName", AttrType.STRING),
     ISSUE_URL("issueUrl", AttrType.STRING);
     ;
 

@@ -5,7 +5,9 @@ import java.util.Date;
 public class Scan {
     public Date scanDate;
 
+    public String targetFile;
     public String displayTargetFile;
+    public String projectName;
     
     public Issue[] vulnerabilities;
 
